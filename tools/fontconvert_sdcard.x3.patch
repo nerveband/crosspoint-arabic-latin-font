@@ -1,0 +1,51 @@
+--- a/lib/EpdFont/scripts/fontconvert_sdcard.py	2026-11-25 17:08:03.179488279 -0500
++++ b/lib/EpdFont/scripts/fontconvert_sdcard.py	2026-11-25 20:12:01.310490756 -0500
+@@ -568,6 +568,28 @@
+     return pairs
+ 
+ 
++
++# ---- X3 extension: synthetic glyphs (stacked Arabic marks) ----------------------------------------
++EXTRA_GLYPHS = None   # callable(style_id, size, codepoint) -> dict(width,rows,left,top,buffer) or None
++
++
++class _FakeBitmap:
++    def __init__(self, d):
++        self.width, self.rows, self.buffer = d["width"], d["rows"], d["buffer"]
++        self.pitch = d["width"]
++
++
++class _FakeSlot:
++    def __init__(self, d):
++        self.bitmap = _FakeBitmap(d)
++        self.bitmap_left, self.bitmap_top = d["left"], d["top"]
++        self.linearHoriAdvance = 0
++
++
++class _FakeFace:
++    def __init__(self, d):
++        self.glyph = _FakeSlot(d)
++
+ def rasterize_font_style(fontfile, size, intervals, style_id=0, force_autohint=False,
+                          fallback_fontfile=None):
+     """Rasterize all glyphs for one font style. Returns StyleRasterData."""
+@@ -593,6 +615,9 @@
+         load_flags |= freetype.FT_LOAD_FORCE_AUTOHINT
+ 
+     def load_glyph(code_point):
++        ex = EXTRA_GLYPHS(style_id, size, code_point) if EXTRA_GLYPHS else None
++        if ex is not None:
++            return _FakeFace(ex)
+         glyph_index = face.get_char_index(code_point)
+         if glyph_index == 0:
+             glyph_index = ligature_glyph_indices.get(code_point, 0)
+@@ -615,7 +640,8 @@
+     for i_start, i_end in intervals:
+         start = i_start
+         for code_point in range(i_start, i_end + 1):
+-            has_primary = face.get_char_index(code_point) != 0 or code_point in ligature_glyph_indices
++            has_primary = (face.get_char_index(code_point) != 0 or code_point in ligature_glyph_indices
++                           or (EXTRA_GLYPHS is not None and EXTRA_GLYPHS(style_id, size, code_point) is not None))
+             has_fallback = fallback_face and fallback_face.get_char_index(code_point) != 0
+             if not has_primary and not has_fallback:
+                 if start < code_point:
