@@ -2,12 +2,50 @@
 
 A `.cpfont` family for [CrossPoint](https://github.com/crosspoint-reader/crosspoint-reader) (the open-source firmware for
 Xteink e-readers) that draws **English with full transliteration marks and fully vowelled Arabic in the same book, with no black
-boxes**. Tested on an Xteink X3 running CrossPoint 2.0.0.
+boxes**. Tested on an Xteink X3 running CrossPoint 2.0.0 (see [Tested on](#tested-on)).
 
 ![An Arabic line on a real X3 (top), the old font in an emulator (middle), this font (bottom)](docs/arabic-line-18pt.png)
 
 *Top: a real X3 screenshot (1-bit capture, so edges are harder than on the screen). Middle: the same line with the first version
 of the font in an emulator that matches the capture. Bottom: this font. The marks now sit on their letters.*
+
+## In plain English
+
+**What is a font here?** A font is a set of pictures of letters. A paper book has its letters printed in it. This e-reader works
+differently: the book cannot bring its own letters. The reader has its own sets, and you pick **one** set for every book.
+
+**What goes wrong?** If a book uses a letter your set has no picture for, the reader draws a black diamond with a question mark
+instead. Most fonts have English but no Arabic, so a book that mixes English and Arabic turns every Arabic letter into a black
+diamond. Even in Arabic, the small marks that show how to say the letters pile on top of each other or float too high.
+
+**What is BookAmiri?** One set that has both. It takes the English letters from one free font (Gentium Book Plus), including the
+special letters used to write Arabic words in English, like ā, ḥ and ʿ. It takes the Arabic letters from another free font
+(Amiri). I glued the two together and fixed how the little marks sit on the letters.
+
+**What does the file look like?** CrossPoint can only load a special kind of font file called `.cpfont`. Each size is its own file,
+so BookAmiri is eight files, from small to big. Inside, every letter is a tiny picture made of dots, not a drawing that can
+stretch. You copy the folder onto the reader's memory card, restart, and pick it in Settings.
+
+**What does it solve?**
+1. No more black diamonds for English plus Arabic in one book.
+2. Bigger text. CrossPoint stops at size 18; these go up to 26.
+3. Marks on Arabic letters sit on the right letter instead of piling up or floating.
+
+**What does it not solve?** You still pick one font for all your books. A few rare mark pile-ups keep the reader's default look.
+It is only tested on one device (below).
+
+## Tested on
+
+- **Device:** Xteink X3 (3.7 inch e-ink screen, 792 x 528 pixels, about 257 pixels per inch, ESP32-C3 chip, no extra RAM)
+- **Firmware:** CrossPoint 2.0.0 (the stable release of 1 November 2026), panel controller UC8253
+- **How:** fonts uploaded over Wi-Fi, pages checked by a screenshot taken over USB; read at size 18, portrait
+- **Not tested:** other Xteink models (X4, X4 Pro), other CrossPoint versions, other e-readers. The `.cpfont` format (version 4) is
+  the same on all CrossPoint devices, so it probably works, but I have not seen it.
+
+![A full page on the X3: an Arabic verse, its English translation, and a reference with transliteration marks](docs/x3-screenshot-first-build.png)
+
+*A real X3 page, taken with the first build (before the fix that makes the marks sit on their letters; the screenshot is a
+1-bit capture, so it looks harsher than the screen).*
 
 ## The problem
 
